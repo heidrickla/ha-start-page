@@ -19,7 +19,13 @@ const el = (tag, cls, text) => {
   return n;
 };
 
-/* ---------- render ---------- */
+/* ---------- render ----------
+   In the Home Assistant sidebar the page sits in the ingress iframe, whose sandbox allows popups but
+   not top navigation, and the targets refuse to load inside a frame anyway (an Access login, Home
+   Assistant itself, a self-signed LAN page), so a same-frame click looks dead. Framed: open a new tab.
+   Top level: same tab, as a start page should. */
+const framed = window.self !== window.top;
+
 function render(model) {
   document.title = model.title ? `${model.title} · Start` : 'Start';
   $('#title').textContent = model.title || 'Home';
@@ -35,6 +41,7 @@ function render(model) {
     for (const c of g.cards) {
       const a = el('a', 'card');
       a.href = c.url;
+      if (framed) { a.target = '_blank'; a.rel = 'noopener'; }
       if (c.monitor) {
         a.dataset.monitor = c.monitor;
         const dot = el('span', 'dot');

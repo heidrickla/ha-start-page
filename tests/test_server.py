@@ -201,6 +201,10 @@ def test_every_file_the_page_references_exists_and_is_relative():
         assert os.path.exists(os.path.join(WWW, r)), r
     js = read("app.js")
     assert "fetch('services.json'" in js and "fetch('status.json'" in js
+    # Inside the Home Assistant ingress iframe a same-frame click looks dead:
+    # the targets refuse to be framed. Framed cards must open a new tab.
+    assert "window.self !== window.top" in js
+    assert "a.target = '_blank'; a.rel = 'noopener'" in js
     assert re.search(r"\[hidden\]\s*\{[^}]*display\s*:\s*none\s*!important", read("styles.css"))
 
 
