@@ -1,0 +1,87 @@
+/* Start Page. Its own sheet; the page must render with nothing else up. */
+:root, :root[data-theme="dark"]{
+  --ink:#101014; --panel:#17181D; --panel2:#1C1E24; --accent:#4FB3E8; --bone:#E8E3D8; --mute:#6B6E78;
+  --line:#24262E;
+  --ok:#57C77E; --bad:#E5687A; --warn:#F2A33C;
+  --mono:"Cascadia Code",ui-monospace,"SF Mono",Consolas,monospace;
+  --sans:"Segoe UI",system-ui,-apple-system,sans-serif;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px;
+  --r-sm:6px; --r-md:10px;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.25);
+  --motion:150ms cubic-bezier(.2,.6,.2,1);
+}
+:root[data-theme="light"]{
+  --ink:#F4F2EE; --panel:#FFFFFF; --panel2:#F0EEE9; --bone:#1B1C21; --mute:#5D6069;
+  --line:#DCD8D0; --accent:#1B6FA8;
+  --ok:#1F7A43; --bad:#B3253C; --warn:#B4711A;
+  --shadow:0 1px 2px rgba(0,0,0,.10),0 6px 20px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}   /* .card and .group set display; this must still win */
+html,body{margin:0;min-height:100%}
+body{background:var(--ink);color:var(--bone);font-family:var(--sans);font-size:14px;line-height:1.5}
+.mute{color:var(--mute)} .mono{font-family:var(--mono)}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:var(--s4);
+  padding:var(--s3) var(--s5);border-bottom:1px solid var(--line);background:var(--panel);
+  position:sticky;top:0;z-index:5}
+.brand{display:flex;align-items:center;gap:var(--s3);min-width:0}
+.glyph{width:30px;height:30px;border-radius:var(--r-sm)}
+.brandtext{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+.name{font-size:16px;letter-spacing:.2px}
+.name b{color:var(--accent);font-weight:600}
+.tag{font-size:11px;color:var(--mute)}
+.cursor{animation:blink 1.2s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+
+.tools{display:flex;align-items:center;gap:var(--s2)}
+#filter{background:var(--panel2);color:var(--bone);border:1px solid var(--line);border-radius:var(--r-sm);
+  padding:7px var(--s3);font-family:var(--sans);font-size:13px;width:220px}
+#filter:focus{outline:2px solid var(--accent);outline-offset:1px}
+.ghost{background:transparent;color:var(--mute);border:1px solid var(--line);border-radius:999px;
+  padding:5px 10px;cursor:pointer;font-size:13px}
+.ghost:hover{color:var(--bone);border-color:var(--accent)}
+
+main{padding:var(--s5);max-width:1180px;margin:0 auto}
+.lede{margin:0 0 var(--s5);font-size:13px}
+.lede:empty{display:none}
+.group{margin-bottom:var(--s6)}
+.group h2{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--mute);
+  margin:0 0 var(--s3);font-weight:600}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:var(--s3)}
+
+.card{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;gap:2px var(--s2);
+  align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:var(--s3) var(--s4);text-decoration:none;color:inherit;transition:border-color var(--motion),
+  transform var(--motion),box-shadow var(--motion)}
+.card:hover,.card:focus-visible{border-color:var(--accent);transform:translateY(-1px);box-shadow:var(--shadow)}
+.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.cname{font-weight:600;font-size:14px}
+/* The description spans both columns unless a dot is present, so names line up either way. */
+.cdesc{grid-column:1 / -1;font-size:12px}
+.card[data-monitor] .cdesc{grid-column:2 / -1}
+
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mute);flex:0 0 auto;
+  transition:background var(--motion)}
+.dot.up{background:var(--ok)}
+.dot.down{background:var(--bad)}
+.dot.pending,.dot.maintenance{background:var(--warn)}
+.dot.stale{opacity:.45}
+
+.empty{padding:var(--s5) 0}
+.problems{font-size:11px;color:var(--warn);white-space:pre-line;border-top:1px solid var(--line);padding-top:var(--s3)}
+.foot{padding:var(--s5);border-top:1px solid var(--line);font-size:11px;text-align:center}
+.foot .sep{padding:0 var(--s2)}
+.foot .bad{color:var(--bad)}
+
+@media (max-width:640px){
+  .topbar{flex-wrap:wrap;padding:var(--s3)}
+  .tools{width:100%}
+  #filter{flex:1 1 auto;width:auto}
+  main{padding:var(--s4)}
+  .cards{grid-template-columns:1fr}
+  .tag{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .card{transition:none} .card:hover{transform:none} .cursor{animation:none}
+}

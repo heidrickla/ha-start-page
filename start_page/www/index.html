@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Start</title>
+<link rel="icon" href="glyph.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <img src="glyph.png" alt="" class="glyph">
+    <div class="brandtext">
+      <span class="name"><b id="title">Home</b></span>
+      <span class="tag mono">// <span id="tagline">start here</span><span class="cursor">_</span></span>
+    </div>
+  </div>
+  <div class="tools">
+    <input id="filter" type="search" placeholder="Filter links…" aria-label="Filter links" autocomplete="off">
+    <button id="themetoggle" class="ghost" type="button" aria-label="Toggle colour theme">◐</button>
+  </div>
+</header>
+
+<main id="main">
+  <p id="lede" class="lede mute"></p>
+  <div id="groups"></div>
+  <p id="empty" class="mute empty" hidden>Nothing matches that filter.</p>
+  <p id="problems" class="problems mono" hidden></p>
+</main>
+
+<footer class="foot mute mono">
+  <span id="status">Status: waiting for the first check.</span>
+  <span class="sep">·</span>
+  Edit the cards under Settings, Add-ons, Start Page, Configuration.
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+# Start Page
+
+Every home service on one page, with live status from Uptime Kuma.
+
+## What it serves
+
+| Path | Content |
+|---|---|
+| `/` | The page: grouped link cards, a filter box, a light/dark toggle. |
+| `/services.json` | The cards, built from the options at start. |
+| `/status.json` | Uptime Kuma's verdict per monitor, refreshed every `status_interval` seconds. |
+| `/healthz` | `ok`, for the Supervisor watchdog. |
+
+Reachable two ways, same server:
+
+| Way | Where |
+|---|---|
+| Sidebar | Home Assistant, Start (ingress; needs a Home Assistant login). |
+| Port | `http://<home assistant>:8090/` on the LAN, or as the origin for a tunnel hostname. |
+
+The port serves the page to anyone who can reach it. Put it behind a login
+(Cloudflare Access, a reverse proxy) before exposing it beyond the LAN. The
+Uptime Kuma key never leaves the add-on; `status.json` carries only names and
+verdicts.
+
+## Options
+
+| Option | Default | Effect |
+|---|---|---|
+| `title` | Home | Brand text and browser title. |
+| `tagline` | start here | The small line under the title. |
+| `lede` | | The paragraph above the cards. Empty hides it. |
+| `uptime_kuma_url` | | Base URL of Uptime Kuma as the add-on reaches it, for example `http://homeassistant.local:3001`. Empty: no dots. |
+| `uptime_kuma_api_key` | | An API key from Uptime Kuma, Settings, API Keys. |
+| `status_interval` | 30 | Seconds between status reads, 10 to 600. |
+| `services` | one example | The cards. |
+
+Each service:
+
+| Field | Required | Meaning |
+|---|---|---|
+| `group` | yes | Section heading. Sections appear in the order their first card does. |
+| `name` | yes | Card title. |
+| `url` | yes | Absolute `http` or `https` URL. |
+| `description` | no | Second line on the card. |
+| `monitor` | no | The monitor's name in Uptime Kuma, exactly as shown there. Gives the card a dot. |
+
+```yaml
+services:
+  - group: Home
+    name: Home Assistant
+    url: https://homeassistant.local:8123
+    description: The house
+    monitor: Home Assistant
+  - group: Elsewhere
+    name: Cloudflare
+    url: https://dash.cloudflare.com
+```
+
+A card with no name, a relative URL or a URL already on the page is left
+off and listed at the foot of the page and in the log, because a card that
+lies teaches you to distrust the page.
+
+## Dots
+
+| Dot | Meaning |
+|---|---|
+| green | Uptime Kuma reports the monitor up. |
+| red | down. |
+| amber | pending or in maintenance. |
+| grey | no `monitor` on the card, or no monitor of that name in Uptime Kuma (the tooltip says which). |
+| dimmed | Uptime Kuma could not be read; the last verdict is shown and the footer says since when. |
+
+The tooltip carries the response time and the check time. The browser probes
+nothing itself: a page served over HTTPS could not reach plain-HTTP LAN
+services anyway, and a second set of probes would only disagree with the
+monitor you already trust.
+
+## Changing the cards
+
+Settings, Add-ons, Start Page, Configuration, then Restart. The server reads
+the options once at start.
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Every dot grey, footer says no Uptime Kuma configured | `uptime_kuma_url` empty | Set it and restart. |
+| Footer says unreachable, HTTP 401 | Wrong or revoked key | Make a new key in Uptime Kuma; an existing key cannot be read back. |
+| Footer says unreachable, connection refused | URL wrong for the add-on's network | Use the host's LAN address and Uptime Kuma's host port, not `localhost`. |
+| One card grey, tooltip names the monitor | The name differs from Uptime Kuma's | Copy the monitor name exactly; it is case-sensitive. |
+| Card missing | It was dropped as invalid | Read the foot of the page or the add-on log. |
