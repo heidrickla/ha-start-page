@@ -6,7 +6,7 @@ Every home service on one page, with live status from Uptime Kuma.
 
 | Path | Content |
 |---|---|
-| `/` | The page: grouped link cards, a filter box, a light/dark toggle. |
+| `/` | The page: grouped link cards, a filter box, a theme toggle (dark by default, the choice kept in the browser). |
 | `/services.json` | The cards, built from the options at start. |
 | `/status.json` | Uptime Kuma's verdict per monitor, refreshed every `status_interval` seconds. |
 | `/healthz` | `ok`, for the Supervisor watchdog. |
@@ -15,13 +15,12 @@ Reachable two ways, same server:
 
 | Way | Where |
 |---|---|
-| Sidebar | Home Assistant, Start (ingress; needs a Home Assistant login). |
-| Port | `http://<home assistant>:8090/` on the LAN, or as the origin for a tunnel hostname. |
+| Sidebar | Home Assistant, Start (ingress; needs a Home Assistant login). Cards open in a new tab, because the ingress frame allows popups and not top navigation. |
+| Port | `http://<home assistant>:8090/` on the LAN, or as the origin for a tunnel hostname. Cards open in the same tab. |
 
-The port serves the page to anyone who can reach it. Put it behind a login
-(Cloudflare Access, a reverse proxy) before exposing it beyond the LAN. The
-Uptime Kuma key never leaves the add-on; `status.json` carries only names and
-verdicts.
+The port has no login of its own; a login in front of it (Cloudflare Access, a
+reverse proxy) covers use beyond the LAN. The Uptime Kuma key stays in the
+add-on; `status.json` carries only names and verdicts.
 
 ## Options
 
@@ -58,8 +57,7 @@ services:
 ```
 
 A card with no name, a relative URL or a URL already on the page is left
-off and listed at the foot of the page and in the log, because a card that
-lies teaches you to distrust the page.
+off and listed at the foot of the page and in the log.
 
 ## Dots
 
@@ -72,9 +70,8 @@ lies teaches you to distrust the page.
 | dimmed | Uptime Kuma could not be read; the last verdict is shown and the footer says since when. |
 
 The tooltip carries the response time and the check time. The browser probes
-nothing itself: a page served over HTTPS could not reach plain-HTTP LAN
-services anyway, and a second set of probes would only disagree with the
-monitor you already trust.
+nothing itself: a page served over HTTPS cannot reach plain-HTTP LAN
+services, and Uptime Kuma is the one verdict.
 
 ## Changing the cards
 
