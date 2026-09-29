@@ -18,9 +18,7 @@ Reachable two ways, same server:
 | Sidebar | Home Assistant, Start (ingress; needs a Home Assistant login). Cards open in a new tab, because the ingress frame allows popups and not top navigation. |
 | Port | `http://<home assistant>:8090/` on the LAN, or as the origin for a tunnel hostname. Cards open in the same tab. |
 
-The port has no login of its own; a login in front of it (Cloudflare Access, a
-reverse proxy) covers use beyond the LAN. The Uptime Kuma key stays in the
-add-on; `status.json` carries only names and verdicts.
+The port has no login of its own; a login in front of it (Cloudflare Access, a reverse proxy) covers use beyond the LAN. The Uptime Kuma key stays in the add-on; `status.json` carries only names and verdicts.
 
 ## Options
 
@@ -56,8 +54,7 @@ services:
     url: https://dash.cloudflare.com
 ```
 
-A card with no name, a relative URL or a URL already on the page is left
-off and listed at the foot of the page and in the log.
+A card with no name, a relative URL or a URL already on the page is left off and listed at the foot of the page and in the log.
 
 ## Dots
 
@@ -69,14 +66,11 @@ off and listed at the foot of the page and in the log.
 | grey | no `monitor` on the card, or no monitor of that name in Uptime Kuma (the tooltip says which). |
 | dimmed | Uptime Kuma could not be read; the last verdict is shown and the footer says since when. |
 
-The tooltip carries the response time and the check time. The browser probes
-nothing itself: a page served over HTTPS cannot reach plain-HTTP LAN
-services, and Uptime Kuma is the one verdict.
+The tooltip carries the response time and the check time. The browser probes nothing itself: a page served over HTTPS cannot reach plain-HTTP LAN services, and Uptime Kuma is the one verdict.
 
 ## Changing the cards
 
-Settings, Add-ons, Start Page, Configuration, then Restart. The server reads
-the options once at start.
+Settings, Add-ons, Start Page, Configuration, then Restart. The server reads the options once at start.
 
 ## Troubleshooting
 
