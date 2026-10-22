@@ -132,11 +132,14 @@ def parse_metrics(text: str) -> dict[str, dict]:
 class StatusPoller:
     """Fetches /metrics on an interval; serves the last good answer with its age."""
 
-    def __init__(self, url: str, api_key: str, interval: int, insecure: bool = True):
+    def __init__(
+        self, url: str, api_key: str, interval: int, verify_tls: bool = True, ca_file: str = ""
+    ):
         self.url = url.rstrip("/") + "/metrics" if url else ""
         self.api_key = api_key
         self.interval = max(10, int(interval or 30))
-        self.insecure = insecure
+        self.verify_tls = verify_tls
+        self.ca_file = ca_file
         self.lock = threading.Lock()
         self.monitors: dict[str, dict] = {}
         self.checked_at: str | None = None
@@ -150,7 +153,11 @@ class StatusPoller:
         req = urllib.request.Request(self.url)
         token = base64.b64encode(f":{self.api_key}".encode()).decode()
         req.add_header("Authorization", f"Basic {token}")
-        ctx = ssl._create_unverified_context() if self.insecure else None
+        try:
+            ctx = self.tls_context()
+        except (OSError, ssl.SSLError) as err:
+            self._fail(f"uptime_kuma_ca_file: {err}")
+            return
         try:
             with urllib.request.urlopen(req, timeout=15, context=ctx) as resp:
                 text = resp.read().decode("utf-8", "replace")
@@ -168,6 +175,15 @@ class StatusPoller:
                 LOG.info("uptime kuma reachable again: %d monitors", len(monitors))
             self.error = None
             self.error_since = None
+
+    def tls_context(self) -> ssl.SSLContext | None:
+        """The key goes only to a certificate that verifies: against `ca_file` when set, else the
+        system store. `verify_tls` off skips the check."""
+        if not self.url.startswith("https"):
+            return None
+        if not self.verify_tls:
+            return ssl._create_unverified_context()
+        return ssl.create_default_context(cafile=self.ca_file or None)
 
     def _fail(self, message: str) -> None:
         with self.lock:
@@ -206,10 +222,19 @@ class App:
         self.www = www
         self.services = services
         self.poller = poller
+        # /status.json answers for these monitors only: the host port has no login.
+        self.card_monitors = {
+            c["monitor"] for g in services["groups"] for c in g["cards"] if c.get("monitor")
+        }
         self.files: dict[str, bytes] = {}
         for name in {v[0] for v in STATIC.values()}:
             with open(os.path.join(www, name), "rb") as fh:
                 self.files[name] = fh.read()
+
+    def status(self) -> dict:
+        snap = self.poller.snapshot()
+        snap["monitors"] = {k: v for k, v in snap["monitors"].items() if k in self.card_monitors}
+        return snap
 
 
 def make_handler(app: App):
@@ -245,7 +270,7 @@ def make_handler(app: App):
             elif path == "/services.json":
                 self._json(app.services)
             elif path == "/status.json":
-                self._json(app.poller.snapshot())
+                self._json(app.status())
             elif path in STATIC:
                 name, ctype = STATIC[path]
                 self._send(200, app.files[name], ctype, "no-cache")
@@ -286,6 +311,8 @@ def main(argv: list[str] | None = None) -> int:
         str(options.get("uptime_kuma_url") or ""),
         str(options.get("uptime_kuma_api_key") or ""),
         services["status_interval"],
+        verify_tls=options.get("uptime_kuma_verify_tls", True) is not False,
+        ca_file=str(options.get("uptime_kuma_ca_file") or ""),
     )
     if poller.url:
         poller.start()

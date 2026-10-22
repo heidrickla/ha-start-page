@@ -7,6 +7,8 @@ import importlib.util
 import json
 import os
 import re
+import ssl
+import subprocess
 import threading
 import urllib.error
 import urllib.request
@@ -270,3 +272,118 @@ def test_healthz_head_and_404(page):
 def test_query_string_does_not_change_the_route(page):
     base, _ = page
     assert get(base + "/healthz?x=1")[2] == b"ok\n"
+
+
+def test_status_json_carries_only_the_monitors_on_cards(page):
+    base, poller = page
+    assert {"Tuxedo Touch panel", "NUT server"} <= poller.monitors.keys(), (
+        "control: Kuma lists them"
+    )
+    doc = json.loads(get(base + "/status.json")[2])
+    assert set(doc["monitors"]) == {"Home Assistant", "Gitea (personal forge)"}
+
+
+@pytest.fixture(scope="module")
+def tls_kuma(tmp_path_factory):
+    """Uptime Kuma on https with a certificate from a throwaway CA, which names 127.0.0.1."""
+    d = tmp_path_factory.mktemp("tls")
+
+    def ossl(*args):
+        subprocess.run(["openssl", *args], check=True, capture_output=True, cwd=d)
+
+    ca_ext = (
+        "-addext",
+        "basicConstraints=critical,CA:TRUE",
+        "-addext",
+        "keyUsage=critical,keyCertSign,cRLSign",
+    )
+    ossl(
+        "req",
+        "-x509",
+        "-newkey",
+        "rsa:2048",
+        "-nodes",
+        "-keyout",
+        "ca.key",
+        "-out",
+        "ca.pem",
+        "-days",
+        "2",
+        "-subj",
+        "/CN=test ca",
+        *ca_ext,
+    )
+    ossl(
+        "req",
+        "-newkey",
+        "rsa:2048",
+        "-nodes",
+        "-keyout",
+        "kuma.key",
+        "-out",
+        "kuma.csr",
+        "-subj",
+        "/CN=kuma",
+    )
+    (d / "san.cnf").write_text("subjectAltName=IP:127.0.0.1\n")
+    ossl(
+        "x509",
+        "-req",
+        "-in",
+        "kuma.csr",
+        "-CA",
+        "ca.pem",
+        "-CAkey",
+        "ca.key",
+        "-CAcreateserial",
+        "-out",
+        "kuma.pem",
+        "-days",
+        "2",
+        "-extfile",
+        "san.cnf",
+    )
+    seen = []
+
+    class Recording(FakeKuma):
+        def do_GET(self):
+            seen.append(self.headers.get("Authorization"))
+            super().do_GET()
+
+    srv = HTTPServer(("127.0.0.1", 0), Recording)
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ctx.load_cert_chain(d / "kuma.pem", d / "kuma.key")
+    srv.socket = ctx.wrap_socket(srv.socket, server_side=True)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    yield f"https://127.0.0.1:{srv.server_port}", str(d / "ca.pem"), seen
+    srv.shutdown()
+
+
+def test_the_key_goes_only_to_a_certificate_that_verifies(tls_kuma):
+    url, ca, seen = tls_kuma
+    seen.clear()
+    poller = server.StatusPoller(url, KEY, 10)  # the system store does not know the CA
+    poller.fetch_once()
+    assert "CERTIFICATE_VERIFY_FAILED" in poller.error and poller.monitors == {} and seen == []
+    poller = server.StatusPoller(url, KEY, 10, ca_file=ca)
+    poller.fetch_once()
+    assert (
+        poller.error is None
+        and poller.monitors["Home Assistant"]["status"] == "up"
+        and len(seen) == 1
+    )
+
+
+def test_verification_off_accepts_any_certificate(tls_kuma):
+    url, _, _ = tls_kuma
+    poller = server.StatusPoller(url, KEY, 10, verify_tls=False)
+    poller.fetch_once()
+    assert poller.error is None and poller.monitors
+
+
+def test_a_missing_ca_file_is_an_error_and_sends_nothing(tls_kuma):
+    url, _, seen = tls_kuma
+    seen.clear()
+    poller = server.StatusPoller(url, KEY, 10, ca_file="/nonexistent/ca.pem")
+    poller.fetch_once()
+    assert poller.error.startswith("uptime_kuma_ca_file:") and seen == []

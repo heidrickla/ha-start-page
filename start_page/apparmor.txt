@@ -29,6 +29,9 @@ profile start_page flags=(attach_disconnected,mediate_deleted) {
   # add-on options
   /data/** r,
 
+  # a CA certificate for Uptime Kuma, by uptime_kuma_ca_file
+  /ssl/** r,
+
   # the server and the page
   /opt/start_page/** r,
   /usr/lib/python3*/** mr,

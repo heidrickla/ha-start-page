@@ -8,7 +8,7 @@ Every home service on one page, with live status from Uptime Kuma.
 |---|---|
 | `/` | The page: grouped link cards, a filter box, a theme toggle (dark by default, the choice kept in the browser). |
 | `/services.json` | The cards, built from the options at start. |
-| `/status.json` | Uptime Kuma's verdict per monitor, refreshed every `status_interval` seconds. |
+| `/status.json` | Uptime Kuma's verdict for each monitor a card names, refreshed every `status_interval` seconds. |
 | `/healthz` | `ok`, for the Supervisor watchdog. |
 
 Reachable two ways, same server:
@@ -18,7 +18,7 @@ Reachable two ways, same server:
 | Sidebar | Home Assistant, Start (ingress; needs a Home Assistant login). Cards open in a new tab, because the ingress frame allows popups and not top navigation. |
 | Port | `http://<home assistant>:8090/` on the LAN, or as the origin for a tunnel hostname. Cards open in the same tab. |
 
-The port has no login of its own; a login in front of it (Cloudflare Access, a reverse proxy) covers use beyond the LAN. The Uptime Kuma key stays in the add-on; `status.json` carries only names and verdicts.
+The port has no login of its own; a login in front of it (Cloudflare Access, a reverse proxy) covers use beyond the LAN. The Uptime Kuma key stays in the add-on; `status.json` carries only the names and verdicts of monitors on cards.
 
 ## Options
 
@@ -29,6 +29,8 @@ The port has no login of its own; a login in front of it (Cloudflare Access, a r
 | `lede` | | The paragraph above the cards. Empty hides it. |
 | `uptime_kuma_url` | | Base URL of Uptime Kuma as the add-on reaches it, for example `http://homeassistant.local:3001`. Empty: no dots. |
 | `uptime_kuma_api_key` | | An API key from Uptime Kuma, Settings, API Keys. |
+| `uptime_kuma_verify_tls` | true | On an `https` URL the key is sent only to a certificate that verifies. Off accepts any certificate. |
+| `uptime_kuma_ca_file` | | A CA certificate file under `/ssl` (mapped read-only) that signed Uptime Kuma's certificate. Empty uses the system store. |
 | `status_interval` | 30 | Seconds between status reads, 10 to 600. |
 | `services` | one example | The cards. |
 

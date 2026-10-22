@@ -14,6 +14,12 @@ configuration:
   uptime_kuma_api_key:
     name: Uptime Kuma API key
     description: From Uptime Kuma, Settings, API Keys. Read-only use.
+  uptime_kuma_verify_tls:
+    name: Verify Uptime Kuma's certificate
+    description: On an https URL the key is sent only to a certificate that verifies. Off accepts any certificate.
+  uptime_kuma_ca_file:
+    name: Uptime Kuma CA file
+    description: A CA certificate file under /ssl that signed Uptime Kuma's certificate, for example /ssl/ca.pem. Empty uses the system store.
   status_interval:
     name: Status interval
     description: Seconds between status reads, 10 to 600.

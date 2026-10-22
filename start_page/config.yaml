@@ -1,5 +1,5 @@
 name: Start Page
-version: "0.1.0"
+version: "0.2.0"
 slug: start_page
 description: Every home service on one page, with live status from Uptime Kuma
 url: https://github.com/heidrickla/ha-start-page
@@ -20,6 +20,9 @@ ingress_port: 8090
 panel_icon: mdi:view-dashboard-outline
 panel_title: Start
 watchdog: http://[HOST]:[PORT:8090]/healthz
+map:
+  - type: ssl
+    read_only: true
 options:
   title: Home
   tagline: start here
@@ -28,6 +31,8 @@ options:
     A dot is Uptime Kuma's verdict on the service behind the card.
   uptime_kuma_url: ""
   uptime_kuma_api_key: ""
+  uptime_kuma_verify_tls: true
+  uptime_kuma_ca_file: ""
   status_interval: 30
   services:
     - group: Home
@@ -41,6 +46,8 @@ schema:
   lede: str?
   uptime_kuma_url: url?
   uptime_kuma_api_key: password?
+  uptime_kuma_verify_tls: bool?
+  uptime_kuma_ca_file: str?
   status_interval: int(10,600)?
   services:
     - group: str
