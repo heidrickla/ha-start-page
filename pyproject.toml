@@ -1,14 +1,14 @@
 [project]
 name = "ha-start-page"
-version = "0.1.0"
+version = "0.3.0"
 description = "Home Assistant add-on: every home service on one page, status from Uptime Kuma"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 license = "MIT"
 
-# The server runs under the add-on base image's Alpine python3 (3.12 on
-# Alpine 3.21), so the target is that, not Home Assistant's own floor.
+# The server runs under the add-on base image's Alpine python3 (3.14 on
+# Alpine 3.24), so the target is that, not Home Assistant's own floor.
 [tool.ruff]
-target-version = "py312"
+target-version = "py314"
 line-length = 100
 
 [tool.ruff.lint]

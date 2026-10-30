@@ -1,5 +1,5 @@
 name: Start Page
-version: "0.2.0"
+version: "0.3.0"
 slug: start_page
 description: Every home service on one page, with live status from Uptime Kuma
 url: https://github.com/heidrickla/ha-start-page
@@ -7,19 +7,14 @@ arch:
   - amd64
   - aarch64
 startup: services
-boot: auto
 init: false
-stage: stable
-advanced: false
 ports:
   8090/tcp: 8090
-ports_description:
-  8090/tcp: The page over plain HTTP, for the LAN or a tunnel origin
 ingress: true
 ingress_port: 8090
 panel_icon: mdi:view-dashboard-outline
 panel_title: Start
-watchdog: http://[HOST]:[PORT:8090]/healthz
+hassio_api: true
 map:
   - type: ssl
     read_only: true
@@ -29,21 +24,18 @@ options:
   lede: >-
     Everything in the house, and the outside links that support it.
     A dot is Uptime Kuma's verdict on the service behind the card.
+  discover_cards: true
   uptime_kuma_url: ""
   uptime_kuma_api_key: ""
   uptime_kuma_verify_tls: true
   uptime_kuma_ca_file: ""
   status_interval: 30
-  services:
-    - group: Home
-      name: Home Assistant
-      url: http://homeassistant.local:8123
-      description: The house
-      monitor: Home Assistant
+  services: []
 schema:
   title: str
   tagline: str?
   lede: str?
+  discover_cards: bool?
   uptime_kuma_url: url?
   uptime_kuma_api_key: password?
   uptime_kuma_verify_tls: bool?

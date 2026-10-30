@@ -26,11 +26,21 @@ const el = (tag, cls, text) => {
    Top level: same tab, as a start page should. */
 const framed = window.self !== window.top;
 
+/* Cards found in Home Assistant carry [HA] and [HOST]. [HOST] is the host this page was loaded from, as
+   in Home Assistant's own Open Web UI button. [HA] is Home Assistant: in the sidebar this page's own
+   origin, at top level the same host on Home Assistant's port. */
+function resolver(ha) {
+  const base = framed || !ha ? location.origin
+    : `${ha.ssl ? 'https' : 'http'}://${location.hostname}:${ha.port}`;
+  return (url) => url.replaceAll('[HA]', base).replaceAll('[HOST]', location.hostname);
+}
+
 function render(model) {
   document.title = model.title ? `${model.title} · Start` : 'Start';
   $('#title').textContent = model.title || 'Home';
   $('#tagline').textContent = model.tagline || 'start here';
   $('#lede').textContent = model.lede || '';
+  const resolve = resolver(model.home_assistant);
   const root = $('#groups');
   root.replaceChildren();
   for (const g of model.groups) {
@@ -40,7 +50,7 @@ function render(model) {
     const cards = el('div', 'cards');
     for (const c of g.cards) {
       const a = el('a', 'card');
-      a.href = c.url;
+      a.href = resolve(c.url);
       if (framed) { a.target = '_blank'; a.rel = 'noopener'; }
       if (c.monitor) {
         a.dataset.monitor = c.monitor;
@@ -60,11 +70,19 @@ function render(model) {
     problems.textContent = 'Cards left off the page:\n' + model.problems.join('\n');
     problems.hidden = false;
   }
+  const nocards = $('#nocards');
+  nocards.hidden = model.groups.length > 0;
+  if (nocards.hidden) nocards.textContent = '';
+  else {
+    const why = model.discovery_error ? ` Home Assistant's apps could not be read: ${model.discovery_error}.` : '';
+    nocards.textContent = 'No cards yet. Add them under Settings, Apps, Start Page, Configuration, Services, '
+      + `or turn on Discover cards there.${why}`;
+  }
   applyFilter();
 }
 
 /* ---------- filter ----------
-   Matches name, description and href, so "10.10" finds the LAN boxes. A group whose cards all hide,
+   Matches name, description and href, so part of an address finds its card. A group whose cards all hide,
    hides too. "/" focuses the box, Escape clears it. */
 const filter = $('#filter');
 function applyFilter() {
@@ -105,7 +123,7 @@ function applyStatus(s) {
   }
   const line = $('#status');
   line.className = stale ? 'bad' : '';
-  if (!s.source) line.textContent = 'Status: no Uptime Kuma configured.';
+  if (s.setup) line.textContent = `Status: ${s.setup}`;
   else if (stale) line.textContent = `Status: Uptime Kuma unreachable since ${clock(s.error_since)} (${s.error}); dots are the last verdict.`;
   else line.textContent = `Status from Uptime Kuma, checked ${clock(s.checked_at)}.`;
 }

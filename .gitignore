@@ -6,3 +6,9 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .venv/
+reports/
+# Agent files do not ship.
+CLAUDE.md
+AGENTS.md
+CONTRIBUTING.md
+.cursorrules
