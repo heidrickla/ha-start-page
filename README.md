@@ -14,6 +14,8 @@ Cards for Home Assistant and its apps appear on their own; a card with a monitor
 
 [![Open your Home Assistant instance and show the Start Page app.](https://my.home-assistant.io/badges/supervisor_addon.svg)](https://my.home-assistant.io/redirect/supervisor_addon/?addon=8e10ddb7_start_page&repository_url=https%3A%2F%2Fgithub.com%2Fheidrickla%2Fha-start-page)
 
+The app runs on amd64 and aarch64.
+
 1. Select the first button to add this repository, then the second to open Start Page.
 2. Select Install, then Start.
 3. Turn on Show in sidebar, then open Start.
