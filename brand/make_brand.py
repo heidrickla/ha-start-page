@@ -1,8 +1,7 @@
-"""Draw the add-on's icon.png (128x128), logo.png (256x100) and the page glyph.
+"""Build the app icon, logo and page glyph from brand/icon-source.png.
 
-    python brand/make_brand.py
+python brand/make_brand.py
 
-A house with an open door: the page is the front door to the house's services.
 """
 
 from __future__ import annotations
@@ -13,40 +12,14 @@ from PIL import Image, ImageDraw
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ADDON = os.path.join(HERE, "..", "start_page")
-NAVY = (16, 16, 20, 255)
 BLUE = (79, 179, 232, 255)
 BONE = (232, 227, 216, 255)
 
 
 def house(size: int) -> Image.Image:
-    """The mark on a rounded navy tile, drawn at 4x and downsampled."""
-    s = size * 4
-    img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    d.rounded_rectangle((0, 0, s - 1, s - 1), radius=s // 5, fill=NAVY)
-    w = s * 0.62
-    x0 = (s - w) / 2
-    roof_y = s * 0.24
-    wall_top = s * 0.50
-    base = s * 0.80
-    stroke = max(2, s // 22)
-    # roof
-    d.polygon([(x0 - stroke, wall_top), (s / 2, roof_y), (x0 + w + stroke, wall_top)], fill=BLUE)
-    d.polygon(
-        [
-            (x0 + stroke * 1.6, wall_top),
-            (s / 2, roof_y + stroke * 2.2),
-            (x0 + w - stroke * 1.6, wall_top),
-        ],
-        fill=NAVY,
-    )
-    # walls
-    d.rectangle((x0, wall_top - stroke / 2, x0 + w, base), outline=BLUE, width=stroke)
-    # open door, lit
-    dw = w * 0.26
-    dx = s / 2 - dw / 2
-    d.rectangle((dx, base - s * 0.22, dx + dw, base), fill=BONE)
-    return img.resize((size, size), Image.LANCZOS)
+    """Resize the approved mark for the app and page glyph."""
+    with Image.open(os.path.join(HERE, "icon-source.png")) as source:
+        return source.convert("RGBA").resize((size, size), Image.LANCZOS)
 
 
 def logo() -> Image.Image:
