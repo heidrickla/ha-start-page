@@ -4,9 +4,9 @@ A Home Assistant app that puts every home service on one page: grouped link card
 
 ## Screenshots
 
-![Start Page in the dark theme with discovered app cards, two cards of its own and Uptime Kuma status dots](docs/images/start-page.png)
+![Start Page dashboard in the dark theme with six example service cards in two groups](docs/images/start-page.png)
 
-Cards for Home Assistant and its apps appear on their own; a card with a monitor gets Uptime Kuma's status dot.
+The screenshot uses example services from the documented local preview command, with no Uptime Kuma configured. [See the phone layout](docs/images/start-page-mobile.png). In Home Assistant, discovered app cards appear automatically; monitored cards show both a status dot and a written verdict.
 
 ## Install
 
@@ -19,7 +19,7 @@ The app runs on amd64 and aarch64.
 1. Select the first button to add this repository, then the second to open Start Page.
 2. Select Install, then Start.
 3. Turn on Show in sidebar, then open Start.
-4. For status dots, make an API key in Uptime Kuma (Settings, API Keys) and paste it into Uptime Kuma API key on the Configuration tab, then restart. Until then the page footer and the app's log say what is missing: no Uptime Kuma, or no API key.
+4. For monitored status, make an API key in Uptime Kuma (Settings, API Keys) and paste it into Uptime Kuma API key on the Configuration tab, then restart. Until then the overview status line and the app's log say what is missing: no Uptime Kuma, or no API key.
 
 Cards for Home Assistant and its apps appear on their own, and an app started later gets its card within five minutes. Cards of your own go under Services on the Configuration tab. A page with no cards says how to add them.
 
@@ -27,7 +27,7 @@ Cards for Home Assistant and its apps appear on their own, and an app started la
 
 | Option | Default | Effect |
 |---|---|---|
-| Title | Home | Brand text and browser title. |
+| Title | Home | Main page heading and browser title. |
 | Tagline | start here | The small line under the title. |
 | Introduction | a short paragraph | The paragraph above the cards. Empty hides it. |
 | Discover cards | on | A card for Home Assistant and one for each running app with a web interface, refreshed every five minutes. A card under Services with the same name replaces the discovered one. |

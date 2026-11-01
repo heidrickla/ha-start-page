@@ -11,19 +11,27 @@
 <header class="topbar">
   <div class="brand">
     <img src="glyph.png" alt="" class="glyph">
-    <div class="brandtext">
-      <span class="name"><b id="title">Home</b></span>
-      <span class="tag mono">// <span id="tagline">start here</span><span class="cursor">_</span></span>
-    </div>
+    <span class="brandname">Start Page</span>
   </div>
   <div class="tools">
     <input id="filter" type="search" placeholder="Filter links…" aria-label="Filter links" autocomplete="off">
-    <button id="themetoggle" class="ghost" type="button" aria-label="Toggle colour theme">◐</button>
+    <button id="themetoggle" class="ghost" type="button" aria-label="Toggle colour theme">Light</button>
   </div>
 </header>
 
 <main id="main">
-  <p id="lede" class="lede mute"></p>
+  <section class="hero" aria-label="Service overview">
+    <div class="hero-main">
+      <p id="tagline" class="eyebrow">start here</p>
+      <h1 id="title">Home</h1>
+      <p id="lede" class="lede"></p>
+    </div>
+    <div class="hero-metrics" aria-label="Service counts">
+      <div><strong id="service-count">—</strong><span>services</span></div>
+      <div><strong id="group-count">—</strong><span>groups</span></div>
+    </div>
+    <p id="status" class="status-line" role="status">Status: waiting for the first check.</p>
+  </section>
   <div id="groups"></div>
   <p id="empty" class="mute empty" hidden>Nothing matches that filter.</p>
   <p id="nocards" class="mute empty" hidden></p>
@@ -31,8 +39,6 @@
 </main>
 
 <footer class="foot mute mono">
-  <span id="status">Status: waiting for the first check.</span>
-  <span class="sep">·</span>
   Edit the cards under Settings, Apps, Start Page, Configuration.
 </footer>
 

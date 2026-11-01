@@ -3,7 +3,10 @@
 'use strict';
 
 const THEME_KEY = 'start-page.theme';
-function applyTheme(t) { document.documentElement.setAttribute('data-theme', t); }
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themetoggle').textContent = t === 'dark' ? 'Light' : 'Dark';
+}
 try { applyTheme(localStorage.getItem(THEME_KEY) || 'dark'); } catch { applyTheme('dark'); }
 document.getElementById('themetoggle').addEventListener('click', () => {
   const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -40,13 +43,17 @@ function render(model) {
   $('#title').textContent = model.title || 'Home';
   $('#tagline').textContent = model.tagline || 'start here';
   $('#lede').textContent = model.lede || '';
+  $('#service-count').textContent = model.groups.reduce((count, group) => count + group.cards.length, 0);
+  $('#group-count').textContent = model.groups.length;
   const resolve = resolver(model.home_assistant);
   const root = $('#groups');
   root.replaceChildren();
   for (const g of model.groups) {
     const sec = el('section', 'group');
     sec.dataset.group = g.name;
-    sec.append(el('h2', null, g.name));
+    const heading = el('h2', null, g.name);
+    heading.append(el('span', 'group-count', String(g.cards.length)));
+    sec.append(heading);
     const cards = el('div', 'cards');
     for (const c of g.cards) {
       const a = el('a', 'card');
@@ -59,6 +66,7 @@ function render(model) {
         a.append(dot);
       }
       a.append(el('span', 'cname', c.name));
+      if (c.monitor) a.append(el('span', 'status-word', 'Checking'));
       a.append(el('span', 'cdesc mute', c.description || ''));
       cards.append(a);
     }
@@ -113,16 +121,27 @@ function applyStatus(s) {
   const stale = !!s.error;
   for (const card of document.querySelectorAll('.card[data-monitor]')) {
     const dot = card.querySelector('.dot');
+    const word = card.querySelector('.status-word');
     const m = s.monitors[card.dataset.monitor];
     dot.className = 'dot';
-    if (!m) { dot.title = `no monitor named "${card.dataset.monitor}" in Uptime Kuma`; continue; }
+    word.className = 'status-word';
+    if (!m) {
+      dot.title = `no monitor named "${card.dataset.monitor}" in Uptime Kuma`;
+      word.textContent = 'No monitor';
+      word.classList.add('unknown');
+      continue;
+    }
     dot.classList.add(m.status);
     if (stale) dot.classList.add('stale');
+    word.dataset.last = m.status;
+    word.textContent = stale ? `Last: ${m.status}` : m.status;
+    word.classList.add(m.status);
+    if (stale) word.classList.add('stale');
     const ms = m.response_ms != null ? ` · ${Math.round(m.response_ms)} ms` : '';
     dot.title = `${m.status}${ms} · checked ${clock(s.checked_at)}`;
   }
   const line = $('#status');
-  line.className = stale ? 'bad' : '';
+  line.className = stale ? 'status-line bad' : 'status-line';
   if (s.setup) line.textContent = `Status: ${s.setup}`;
   else if (stale) line.textContent = `Status: Uptime Kuma unreachable since ${clock(s.error_since)} (${s.error}); dots are the last verdict.`;
   else line.textContent = `Status from Uptime Kuma, checked ${clock(s.checked_at)}.`;
@@ -133,7 +152,13 @@ async function pollStatus(interval) {
     applyStatus(await r.json());
   } catch (e) {
     $('#status').textContent = `Status: the page server did not answer (${e.message}).`;
-    $('#status').className = 'bad';
+    $('#status').className = 'status-line bad';
+    for (const card of document.querySelectorAll('.card[data-monitor]')) {
+      card.querySelector('.dot').classList.add('stale');
+      const word = card.querySelector('.status-word');
+      word.textContent = word.dataset.last ? `Last: ${word.dataset.last}` : 'Unavailable';
+      word.classList.add('stale');
+    }
   } finally {
     setTimeout(() => pollStatus(interval), interval * 1000);
   }
