@@ -371,6 +371,7 @@ def tls_kuma(tmp_path_factory):
 
     srv = HTTPServer(("127.0.0.1", 0), Recording)
     ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ctx.minimum_version = ssl.TLSVersion.TLSv1_2
     ctx.load_cert_chain(d / "kuma.pem", d / "kuma.key")
     srv.socket = ctx.wrap_socket(srv.socket, server_side=True)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
